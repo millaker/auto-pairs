@@ -176,6 +176,21 @@ func! s:matchbegin(text, close)
     return [a:text, m, strpart(a:text, len(m), len(a:text)-len(m))]
 endf
 
+" Helper function for ignoring auto-close when cursor is in or before a word
+" return True if next character is a space or new line character
+func! s:canAutoClose(after)
+  let left = [']', "'", '}', ')', '>', '"']
+  for key in left
+    if a:after == key
+      return 1
+    end
+  endfor
+  if a:after == '' || a:after == '\n' || a:after == ' '
+    return 1
+  return 0
+  end
+endf
+
 " add or delete pairs base on g:AutoPairs
 " AutoPairsDefine(addPairs:dict[, removeOpenPairList:list])
 "
@@ -206,6 +221,10 @@ func! AutoPairsInsert(key)
 
   " Ignore auto close if prev character is \
   if before[-1:-1] == '\'
+    return a:key
+  end
+  "Don't auto-close if next character is not a space or newline
+  if !s:canAutoClose(after[0:0])
     return a:key
   end
 
